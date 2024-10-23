@@ -8,30 +8,39 @@ cd "$(dirname "$0")"
 # Set MAVEN_OPTS environment variable
 export MAVEN_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
 
-# Check for the first argument and set it as the main class
+# Check for the first argument and set it as the main class, or exit if not provided
+if [ -z "$1" ]; then
+  echo "Error: No main class specified."
+  exit 1
+fi
+
 mainClass="$1"
+shift # Remove the first argument (mainClass) so the rest can be passed to Maven
 
 echo "Setting MAVEN_OPTS to: $MAVEN_OPTS"
 echo "Main Class: $mainClass"
 
-# Remove the first argument (mainClass) so the rest can be passed to Maven
-shift
-
 # Construct Maven argument for the main class
 mavenMainClassArg="-Dexec.mainClass=$mainClass"
 
-# Use "$@" to properly handle all arguments intended for the Java program
-javaArgs="$@"
-
-# Join the arguments into a single string with proper escaping
-javaArgsStr=$(printf "%q " "$javaArgs")
-
-# Construct argument for passing additional args to Java program
-execArgsForJava="-Dexec.args=\"$javaArgsStr\""
+# Check if there are any remaining arguments
+if [ "$#" -gt 0 ]; then
+  # Join the arguments into a single string, properly escaped
+  javaArgsStr="$*"
+  execArgsForJava="-Dexec.args=\"$javaArgsStr\""
+else
+  execArgsForJava=""
+fi
 
 echo "Maven Main Class Argument: $mavenMainClassArg"
 echo "Java Program Arguments: $javaArgsStr"
 
-# Execute mvn command
-mvn clean clean compile test
-mvn exec:java $mavenMainClassArg $execArgsForJava
+# Execute Maven commands
+mvn clean compile test
+
+# Run the Maven exec command with conditional arguments
+if [ -n "$execArgsForJava" ]; then
+  mvn exec:java -PrunMain $mavenMainClassArg $execArgsForJava
+else
+  mvn exec:java -PrunMain $mavenMainClassArg
+fi
