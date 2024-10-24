@@ -3,9 +3,16 @@ package cat.iesesteveterradas.fites;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,7 +34,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
@@ -138,17 +147,99 @@ public class Exercici4 {
     // Mètode que crea el document XML a partir de la llista proporcionada
     private Document crearDocumentXML(ArrayList<String[]> llista) {
         // *************** CODI EXERCICI FITA **********************/
-        return null; // A substituir 
+        Document doc = null;
+
+        try{
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            doc = db.newDocument();
+
+            Element elmRoot = doc.createElement("llista");
+            doc.appendChild(elmRoot);
+
+            for (String[] array : llista) {
+                Element elmLlenguatge = doc.createElement("llenguatge");
+                Attr attrDif = doc.createAttribute("dificultat");
+                attrDif.setValue(array[3]);
+                Attr attrExt = doc.createAttribute("extensio");
+                attrExt.setValue(array[2]);
+
+                elmLlenguatge.setAttributeNode(attrDif);
+                elmLlenguatge.setAttributeNode(attrExt);
+
+                Element elmNom = doc.createElement("nom");
+                elmLlenguatge.appendChild(elmNom);
+                Text nodeTextNom = doc.createTextNode(array[0]);
+                elmNom.appendChild(nodeTextNom);
+
+                Element elmAny = doc.createElement("any");
+                elmLlenguatge.appendChild(elmAny);
+                Text nodeTextAny = doc.createTextNode(array[1]);
+                elmAny.appendChild(nodeTextAny);
+
+                elmRoot.appendChild(elmLlenguatge);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return doc; // A substituir 
     }
 
     // Escriu un Document en un fitxer XML
     public static void guardarXML(String path, Document doc) {
         // *************** CODI EXERCICI FITA **********************/
+        File fitxerSortida = new File(path);
+
+        try {
+            if (!fitxerSortida.exists()) {fitxerSortida.createNewFile(); }
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(fitxerSortida);
+        transformer.transform(source, result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // Escriu la llista en un fitxer JSON utilitzant Jakarta
     public void guardarJSON(String path, ArrayList<String[]> llista) {
         // *************** CODI EXERCICI FITA **********************/
+        File sortidaJson = new File(path);
+
+
+        if (!sortidaJson.exists()) {try {
+            sortidaJson.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } }
+
+        try {
+            JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+            for (String[] array : llista) {
+                JsonObject llenguatge = Json.createObjectBuilder()
+                        .add("nom", array[0])
+                        .add("any", array[1])
+                        .add("extensio", array[2])
+                        .add("dificultat", array[3])
+                        .build();
+                arrayBuilder.add(llenguatge);
+            }
+
+            JsonArray jsonArray = arrayBuilder.build();
+            try (JsonWriter jsonWriter = Json.createWriter(Files.newBufferedWriter(Paths.get(path)))) {
+                jsonWriter.writeArray(jsonArray);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
     /****************************************************************************/
