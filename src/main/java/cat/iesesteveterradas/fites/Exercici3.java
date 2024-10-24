@@ -2,6 +2,7 @@ package cat.iesesteveterradas.fites;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import cat.iesesteveterradas.fites.objectes.Exercici3nau;
 
@@ -51,17 +52,32 @@ public class Exercici3 {
     // Mètode per serialitzar la llista a un fitxer
     public void serialitzaLlista(String filePath, ArrayList<Exercici3nau> llista) {
         // *************** CODI EXERCICI FITA **********************/
+        try (FileOutputStream fos = new FileOutputStream(filePath);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(llista);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // Mètode per deserialitzar la llista del fitxer
     public ArrayList<Exercici3nau> deserialitzaLlista(String filePath) {
         // *************** CODI EXERCICI FITA **********************/
-        return null; // A substituir 
+        try (FileInputStream fis = new FileInputStream(filePath);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            return (ArrayList<Exercici3nau>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null; // A substituir
     }
 
     // Mètode per imprimir la llista
     public void imprimeixLlista(ArrayList<Exercici3nau> llista) {
         // *************** CODI EXERCICI FITA **********************/
+        for (Exercici3nau nau : llista) {
+            System.out.println(nau);
+        }
     }
 
     /****************************************************************************/

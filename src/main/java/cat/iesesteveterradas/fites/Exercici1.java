@@ -1,9 +1,13 @@
 package cat.iesesteveterradas.fites;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -33,12 +37,42 @@ public class Exercici1 {
     // Processa el fitxer d'entrada i genera el fitxer de sortida.
     public void executa() {
         // *************** CODI EXERCICI FITA **********************/
+        File fitxerSortida = new File(filePathOut);
+        
+
+        try {
+            fitxerSortida.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            List<String> linies = Files.readAllLines(Paths.get(filePathIn));
+            for (String linea : linies) {
+                String lineaGirada = giraText(linea);
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePathOut, StandardCharsets.UTF_8, true))) {
+                    writer.write(lineaGirada);
+                    writer.newLine();
+                } catch (IOException e) {
+                    System.out.println("Error en escriure l'arxiu: " + e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error en la lectura del fitxer: " + filePathIn);
+            e.printStackTrace();
+        }
     }
 
     // Mètode per invertir el text d'una línia
     public static String giraText(String text) {
         // *************** CODI EXERCICI FITA **********************/
-        return null; // A substituir 
+        String textGirat = "";
+
+        for (int i = text.length() - 1; i >= 0; i--) {
+
+			textGirat = textGirat + text.charAt(i);
+		}
+		return textGirat; // A substituir 
     }
 
     /****************************************************************************/
